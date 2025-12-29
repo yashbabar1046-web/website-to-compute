@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Big Bull Y.B</title>
+<style>
+body { font-family: Arial; background:#0f172a; color:white; padding:15px; }
+h1 { text-align:center; color:#facc15; }
+table { width:100%; border-collapse: collapse; margin-top:20px; }
+th, td { border:1px solid #334155; padding:10px; text-align:center; }
+th { background:#1e293b; }
+tr.good { background:#14532d; color:#bbf7d0; }
+tr.bad { background:#7f1d1d; color:white; }
+@media(max-width:600px){
+  td, th { font-size:12px; padding:5px; }
+}
+.chart-container { margin-top:20px; }
+</style>
+<script src="https://s3.tradingview.com/tv.js"></script>
+</head>
+<body>
+
+<h1>📈 Big Bull Y.B</h1>
+<p>Top 10 mid/low cap stocks (<₹150) with Entry / SL / TP. Table refresh every 1s.</p>
+
+<table>
+  <thead>
+    <tr>
+      <th>Stock</th>
+      <th>Entry</th>
+      <th>SL</th>
+      <th>TP</th>
+      <th>Signal</th>
+      <th>% Change</th>
+    </tr>
+  </thead>
+  <tbody id="stockTable"></tbody>
+</table>
+
+<div id="charts" class="chart-container"></div>
+
+<script>
+// Sample stock data (replace with real API later)
+let stocks = [
+  { symbol: "INFY", price: 140, change: 2.5 },
+  { symbol: "TCS", price: 130, change: 3.1 },
+  { symbol: "YESBANK", price: 45, change: 6.2 },
+  { symbol: "PNB", price: 38, change: 4.8 },
+  { symbol: "RELIANCE", price: 150, change: 1.8 },
+  { symbol: "ICICI", price: 145, change: 2.9 },
+  { symbol: "IDFC", price: 25, change: 5.0 },
+  { symbol: "BANKBARODA", price: 60, change: 3.5 },
+  { symbol: "HCLTECH", price: 110, change: 2.2 },
+  { symbol: "ADANIENT", price: 90, change: 4.0 }
+];
+
+// Calculate Entry / SL / TP
+function calculateSignals(stock) {
+    const entry = stock.price;
+    const sl = (stock.price * 0.98).toFixed(2);    // 2% below
+    const tp = (stock.price * 1.10).toFixed(2);    // 10% gain
+    const signal = stock.change >= 2 ? "RALLY ✅" : "IGNORE ❌";
+    return { ...stock, entry, sl, tp, signal };
+}
+
+// Update table every 1 second
+function updateTable(){
+    const table = document.getElementById("stockTable");
+    const filtered = stocks
+        .filter(s => s.price <= 150)
+        .sort((a,b) => b.change - a.change)
+        .slice(0,10)
+        .map(calculateSignals);
+
+    let rows = "";
+    filtered.forEach(stock => {
+        rows += `<tr class="${stock.signal.includes('✅') ? 'good' : 'bad'}">
+            <td>${stock.symbol}</td>
+            <td>₹${stock.entry}</td>
+            <td>₹${stock.sl}</td>
+            <td>₹${stock.tp}</td>
+            <td>${stock.signal}</td>
+            <td>${stock.change}%</td>
+        </tr>`;
+    });
+    table.innerHTML = rows;
+}
+setInterval(updateTable, 1000);
+updateTable();
+
+// Load TradingView charts (fixed for each stock)
+function loadCharts() {
+    const chartDiv = document.getElementById("charts");
+    chartDiv.innerHTML = "";
+    stocks.forEach(stock => {
+        const div = document.createElement("div");
+        div.style.marginBottom = "20px";
+        div.innerHTML = `<iframe src="https://s.tradingview.com/widgetembed/?symbol=NSE:${stock.symbol}&interval=D&symboledit=1&toolbarbg=f1f3f6&studies=BB%40tv-basicstudies,EMA%40tv-basicstudies,RSI%40tv-basicstudies&theme=dark&style=1&timezone=Asia%2FKolkata&locale=en" width="100%" height="300" frameborder="0" allowtransparency="true" scrolling="no"></iframe>`;
+        chartDiv.appendChild(div);
+    });
+}
+loadCharts();
+</script>
+
+</body>
+</html>
